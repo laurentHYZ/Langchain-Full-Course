@@ -1,14 +1,16 @@
 import json
 import os
 
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 from dotenv import find_dotenv, load_dotenv
 
 
 class OpenAIHandler:
     def __init__(self, api_functions, function_definitions, model="gpt-3.5-turbo-0613"):
         load_dotenv(find_dotenv())
-        openai.api_key = os.environ.get("OPENAI_API_KEY")
+        
         if openai.api_key is None:
             raise ValueError("OPENAI_API_KEY not found in environment variables.")
 
@@ -17,11 +19,9 @@ class OpenAIHandler:
         self.model = model
 
     def send_message(self, query):
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=[{"role": "user", "content": query}],
-            functions=self.function_definitions,
-        )
+        response = client.chat.completions.create(model=self.model,
+        messages=[{"role": "user", "content": query}],
+        functions=self.function_definitions)
         message = response["choices"][0]["message"]
         return message
 
@@ -47,18 +47,16 @@ class OpenAIHandler:
 
         if function_name and result:
             print("Function call necessary to fulfill users request")
-            second_response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "user", "content": query},
-                    message,
-                    {
-                        "role": "function",
-                        "name": function_name,
-                        "content": result,
-                    },
-                ],
-            )
+            second_response = client.chat.completions.create(model=self.model,
+            messages=[
+                {"role": "user", "content": query},
+                message,
+                {
+                    "role": "function",
+                    "name": function_name,
+                    "content": result,
+                },
+            ])
             return second_response["choices"][0]["message"]["content"]
         else:
             return message["content"]
