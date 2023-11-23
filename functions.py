@@ -39,11 +39,13 @@ print_version("langchain")
 # +
 from dotenv import load_dotenv
 import os
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 import json
 
 load_dotenv()
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+
 
 
 # -
@@ -77,11 +79,9 @@ functions = [
 
 
 def chat(query):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        messages=[{"role": "user", "content": query}],
-        functions=functions,
-    )
+    response = client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    messages=[{"role": "user", "content": query}],
+    functions=functions)
     message = response["choices"][0]["message"]
     return message
 
@@ -101,18 +101,16 @@ if message.get("function_call"):
         pizza_name=pizza_name
     )
 
-    second_response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        messages=[
-            {"role": "user", "content": query},
-            message,
-            {
-                "role": "function",
-                "name": function_name,
-                "content": function_response,
-            },
-        ],
-    )
+    second_response = client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    messages=[
+        {"role": "user", "content": query},
+        message,
+        {
+            "role": "function",
+            "name": function_name,
+            "content": function_response,
+        },
+    ])
 
 second_response
 # -

@@ -23,7 +23,7 @@ from dotenv import load_dotenv, find_dotenv
 from langchain import PromptTemplate, OpenAI, LLMChain
 
 load_dotenv(find_dotenv())
-openai.api_key = os.environ["OPENAI_API_KEY"]
+
 
 # +
 from langchain.memory import ChatMessageHistory
